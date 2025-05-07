@@ -1,0 +1,7 @@
+../Core/Src/swd_flash.c:27:6:SWD_Unlock_Flash	8	static
+../Core/Src/swd_flash.c:41:6:SWD_Erase_Page	24	static
+../Core/Src/swd_flash.c:61:6:SWD_Write_Parity	24	static
+../Core/Src/swd_flash.c:73:6:SWD_Write_Word	24	static
+../Core/Src/swd_flash.c:100:6:SWD_Write_Firmware	24	static
+../Core/Src/swd_flash.c:112:9:SWD_Verify_Firmware	24	static
+../Core/Src/swd_flash.c:138:6:SWD_Lock_Flash	8	static

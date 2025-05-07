@@ -1,0 +1,4 @@
+../Core/Src/swd_bitbang.c:18:6:SWD_Write_Bit	1
+../Core/Src/swd_bitbang.c:29:9:SWD_Read_Bit	1
+../Core/Src/swd_bitbang.c:45:6:SWD_Write_Byte	2
+../Core/Src/swd_bitbang.c:57:9:SWD_Read_Byte	2

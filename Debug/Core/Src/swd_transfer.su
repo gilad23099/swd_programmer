@@ -1,0 +1,2 @@
+../Core/Src/swd_transfer.c:18:6:SWD_Send_Request_WithRetry	24	static
+../Core/Src/swd_transfer.c:37:9:SWD_Build_Header	24	static

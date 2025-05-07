@@ -1,0 +1,6 @@
+../Core/Src/swd_dp_ap.c:15:6:SWD_Write_DP	24	static
+../Core/Src/swd_dp_ap.c:29:6:SWD_Read_DP	40	static
+../Core/Src/swd_dp_ap.c:50:6:SWD_PollPowerUp	24	static
+../Core/Src/swd_dp_ap.c:74:6:SWD_Write_TAR	24	static
+../Core/Src/swd_dp_ap.c:89:6:SWD_Write_DRW	24	static
+../Core/Src/swd_dp_ap.c:99:9:SWD_Read_DRW	32	static
