@@ -4,115 +4,144 @@
  *  Created on: May 7, 2025
  *      Author: gw230
  */
-
-#include <stdio.h>
 #include "swd_dp_ap.h"
+/* ---------------------------------------------------------------------------
+ *  Helper macros – AP register indices (A[3:2])
+ *  0 = CSW / IDR , 1 = TAR , 2 = reserved , 3 = DRW
+ *---------------------------------------------------------------------------*/
+#define AP_TAR   1    /* A3:A2 = 01b */
+#define AP_DRW   3    /* A3:A2 = 11b */
 
-//---------------------------DP-------------------------------//
 
-
-// Write to a Debug Port register (DP)
-void SWD_Write_DP(uint8_t reg_address_name, uint32_t data) {
-	uint8_t header=0;
-	header=SWD_Build_Header(DP,WRITE,reg_address_name);
-    if (!SWD_Send_Request_WithRetry(header)) return;
-
-    SWD_Set_IO_Mode_Output();
-    for (int i = 0; i < 32; i++) SWD_Write_Bit((data >> i) & 1);
-    SWD_Write_Parity(data);
-}
-
-/**
- * SWD_Read_DP
- * Reads a 32-bit Debug Port register via SWD using the generic header builder.
- */
-bool SWD_Read_DP(uint8_t reg_address_name, uint32_t *data_out) {
-    // Build SWD header for DP read
-    uint8_t header = SWD_Build_Header(DP, READ, reg_address_name);
-    if (!SWD_Send_Request_WithRetry(header)) return false;
-
-    // Read 32 data bits LSB-first
-    uint32_t val = 0;
-    for (int i = 0; i < 32; ++i) {
-        val |= (SWD_Read_Bit() << i);
+/* ================================================================== */
+/*   Retry wrappers – repeat until ACK-OK, or first non-WAIT error     */
+/* ================================================================== */
+swd_error_t SWD_Write_DP_Retry(uint8_t reg, uint32_t data, int tries)
+{
+    while (tries--) {
+        swd_error_t e = SWD_Write_DP(reg, data);
+        if (e == SWD_ERROR_OK)   return e;
+        if (e != SWD_ERROR_WAIT) return e;      /* FAULT / PROTOCOL / PARITY */
     }
-    // Read and verify parity
-    if (SWD_Read_Bit() != (__builtin_parity(val) & 1)) return false;
-    *data_out = val;
-    return true;
-
+    return SWD_ERROR_WAIT;
 }
 
-/**
- * SWD_PollPowerUp
- * Polls CTRL/STAT (DP 0x04->DP_CTRL_STAT) until power-up ACK bits set or timeout.
- */
-bool SWD_PollPowerUp(int timeout) {
+swd_error_t SWD_Read_DP_Retry(uint8_t reg, uint32_t *data, int tries)
+{
+    while (tries--) {
+        swd_error_t e = SWD_Read_DP(reg, data);
+        if (e == SWD_ERROR_OK)   return e;
+        if (e != SWD_ERROR_WAIT) return e;
+    }
+    return SWD_ERROR_WAIT;
+}
+
+swd_error_t SWD_Write_AP_Retry(uint8_t reg, uint32_t data, int tries)
+{
+    while (tries--) {
+        swd_error_t e = SWD_Write_AP(reg, data);
+        if (e == SWD_ERROR_OK)   return e;
+        if (e != SWD_ERROR_WAIT) return e;
+    }
+    return SWD_ERROR_WAIT;
+}
+
+swd_error_t SWD_Read_AP_Retry(uint8_t reg, uint32_t *data, int tries)
+{
+    while (tries--) {
+        swd_error_t e = SWD_Read_AP(reg, data);
+        if (e == SWD_ERROR_OK)   return e;
+        if (e != SWD_ERROR_WAIT) return e;
+    }
+    return SWD_ERROR_WAIT;
+}
+
+
+
+/* ---------------------------------------------------------------------------
+ *  Poll DP_CTRL_STAT for power-up acknowledge
+ *---------------------------------------------------------------------------*/
+bool SWD_PollPowerUp(uint32_t timeout_ms)
+{
     uint32_t stat;
-    while (timeout-- > 0) {
-        if (!SWD_Read_DP(DP_CTRL_STAT, &stat)) continue;
 
-        // Check CDBGPWRUPACK (bit 29) and CSYSPWRUPACK (bit 31)
-        if ((stat & (1u << 29)) && (stat & (1u << 31))) {
+    while (timeout_ms--)
+    {
+        if (SWD_Read_DP(DP_CTRL_STAT, &stat) != SWD_ERROR_OK)
+            continue;                       /* retry on WAIT / FAULT */
+
+        /* CDBGPWRUPACK (bit 29) && CSYSPWRUPACK (bit 31) */
+        if ( (stat & (1u << 29)) && (stat & (1u << 31)) )
             return true;
-        }
+
+        delay_us(1000);                     /* ~1 ms back-off   */
     }
-    return false;
+    return false;                            /* timeout          */
+}
+
+/* ---------------------------------------------------------------------------
+ *  Write Target Address Register (AP-TAR)
+ *---------------------------------------------------------------------------*/
+swd_error_t SWD_Write_TAR(uint32_t addr)
+{
+    return SWD_Write_AP(AP_TAR, addr);       /* returns SWD_ERROR_* */
+}
+
+/* ---------------------------------------------------------------------------
+ *  Write Data Read/Write register (AP-DRW)
+ *---------------------------------------------------------------------------*/
+swd_error_t SWD_Write_DRW(uint32_t data)
+{
+    return SWD_Write_AP(AP_DRW, data);
+}
+
+/* ---------------------------------------------------------------------------
+ *  Read AP-DRW with ARM two-phase pipeline
+ *     first read is dummy, second read gets real data
+ *---------------------------------------------------------------------------*/
+swd_error_t SWD_Read_DRW(uint32_t *data_out)
+{
+    uint32_t dummy;
+
+    /* dummy read (value is discarded) */
+    if (SWD_Read_AP(AP_DRW, &dummy) != SWD_ERROR_OK)
+        return SWD_ERROR_FAULT;             /* or whatever you prefer */
+
+    /* real read */
+    return SWD_Read_AP(AP_DRW, data_out);
+}
+
+
+/* -----------------  Clear sticky error flags in DP --------------------
+ *  Must be called after any transaction that returns ACK_FAULT,
+ *  OR once straight after power-up (recommended).
+ * -------------------------------------------------------------------*/
+swd_error_t SWD_ClearSticky(void)
+{
+    /* DP_ABORT is register index 0 (A3:A2 = 00b)                        *
+     * We write a 1 to every “*_CLR” bit we want to clear.                */
+    uint32_t value = DP_ABORT_STKERRCLR |
+                     DP_ABORT_WDERRCLR  |
+                     DP_ABORT_ORUNERRCLR;
+
+    return SWD_Write_DP(/*reg=*/0, value);
 }
 
 
 
-//---------------------------AP-------------------------------//
-
-
-/*
- * SWD_Write_TAR
- * Writes an address to the Target Address Register (TAR) in the AP.
- * Parameters:
- *   addr – 32-bit memory address to be targeted.
- */
-void SWD_Write_TAR(uint32_t addr) {
-    uint8_t request = 0b10010011;  // [Start=1][AP/DP=1][RnW=0][A2=0][A3=1][Parity=0][Stop=0][Park=1]
-    if (!SWD_Send_Request_WithRetry(request)) return;
-    SWD_Set_IO_Mode_Output();
-    for (int i = 0; i < 32; i++) SWD_Write_Bit((addr >> i) & 1);
-    SWD_Write_Parity(addr);
-}
-
-/*
- * SWD_Write_DRW
- * Writes data to the Data Read/Write register (DRW) in the AP.
- * Requires TAR to be set beforehand.
- * Parameters:
- *   data – 32-bit value to write.
- */
-void SWD_Write_DRW(uint32_t data) {
-	uint8_t request = 0b10111011;  // [Start=1][AP/DP=1][RnW=0][A2=1][A3=1][Parity=1][Stop=0][Park=1]
-    if (!SWD_Send_Request_WithRetry(request)) return;
-    SWD_Set_IO_Mode_Output();
-    for (int i = 0; i < 32; i++) SWD_Write_Bit((data >> i) & 1);
-    SWD_Write_Parity(data);
-}
 
 
 
-uint8_t SWD_Read_DRW(uint32_t *data_out) {
-	// ignore first call
-    if (!SWD_Send_Request_WithRetry(0b10111011)) return 0;
-    for (int i = 0; i < 32; i++) SWD_Read_Bit();
-    SWD_Read_Bit(); // discard parity
+//------------------------------------------------try-------------------------------------//
 
-    // second call - real value
-    if (!SWD_Send_Request_WithRetry(0b10111011)) return 0;
-    uint32_t data = 0;
-    for (int i = 0; i < 32; i++) data |= (SWD_Read_Bit() << i);
 
-    uint8_t parity_bit = SWD_Read_Bit();
-    if (__builtin_parity(data) != parity_bit) {
-            printf("Parity error on DRW read: 0x%08lX\n", data);
-            return 0;
-    }
-    *data_out = data;
-    return 1;
-}
+
+
+
+
+
+
+
+
+
 

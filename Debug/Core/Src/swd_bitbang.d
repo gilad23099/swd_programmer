@@ -1,6 +1,5 @@
 Core/Src/swd_bitbang.o: ../Core/Src/swd_bitbang.c \
  ../Core/Inc/swd_bitbang.h ../Core/Inc/swd_defs.h ../Core/Inc/swd_gpio.h \
- ../Core/Inc/swd_defs.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -43,7 +42,6 @@ Core/Src/swd_bitbang.o: ../Core/Src/swd_bitbang.c \
 ../Core/Inc/swd_bitbang.h:
 ../Core/Inc/swd_defs.h:
 ../Core/Inc/swd_gpio.h:
-../Core/Inc/swd_defs.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:

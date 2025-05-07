@@ -5,83 +5,115 @@
  *      Author: gw230
  */
 #include "swd_gpio.h"
+#include "stm32f4xx_hal.h"
 
-/*
- * delay_short
- * Generates a short delay using a no-operation loop.
- * Used to synchronize SWCLK clock edges in SWD communication.
- */
-void delay_short(void) {
-    for (volatile int i = 0; i < 50; i++) __NOP();
+/* -----------------------------------------------------------------------------
+ *  DWT based micro second delay
+ * --------------------------------------------------------------------------*/
+static void enable_dwt_cycle_counter(void)
+{
+    /* Enable DWT CYCCNT for high resolution timing */
+    if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+
+    DWT->CYCCNT = 0;
+    DWT->CTRL  |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
-/*
- * SWD_Set_IO_Mode_Output
- * Configures the SWDIO pin as output.
- * Required when the host needs to send bits to the target (write phase).
- */
-void SWD_Set_IO_Mode_Output(void) {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = PIN_SWDIO;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    HAL_GPIO_Init(PORT_SWD, &GPIO_InitStruct);
+void delay_us(uint32_t us)
+{
+    const uint32_t hclk   = HAL_RCC_GetHCLKFreq();     /* Core frequency (Hz)   */
+    const uint32_t cycles = (hclk / 1000000UL) * us;
+    uint32_t start = DWT->CYCCNT;
+
+    while ((DWT->CYCCNT - start) < cycles) __NOP();
 }
 
-/*
- * SWD_Set_IO_Mode_Input
- * Configures the SWDIO pin as input.
- * Required when the host expects to receive ACK or data from the target (read phase).
- */
-void SWD_Set_IO_Mode_Input(void) {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = PIN_SWDIO;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(PORT_SWD, &GPIO_InitStruct);
+/* -----------------------------------------------------------------------------
+ *  GPIO configuration helpers
+ * --------------------------------------------------------------------------*/
+void SWD_Set_IO_Mode_Output(void)
+{
+    GPIO_InitTypeDef cfg = {0};
+    cfg.Pin   = PIN_SWDIO;
+    cfg.Mode  = GPIO_MODE_OUTPUT_PP;
+    cfg.Pull  = GPIO_NOPULL;
+    cfg.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(PORT_SWD, &cfg);
 }
 
-/*
- * SWD_GPIO_Init
- * Initializes the required GPIO pins (SWDIO and SWCLK) for SWD communication.
- * Enables the GPIO clock and sets up SWCLK as output.
- */
-void SWD_GPIO_Init(void) {
+void SWD_Set_IO_Mode_Input(void)
+{
+    GPIO_InitTypeDef cfg = {0};
+    cfg.Pin  = PIN_SWDIO;
+    cfg.Mode = GPIO_MODE_INPUT;
+    cfg.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(PORT_SWD, &cfg);
+}
+
+void SWD_GPIO_Init(void)
+{
+    /* Enable GPIO clock (change port if PORT_SWD != GPIOB) */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = PIN_SWCLK;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    HAL_GPIO_Init(PORT_SWD, &GPIO_InitStruct);
+    GPIO_InitTypeDef cfg = {0};
 
+    /* SWCLK configured as push pull output */
+    cfg.Pin   = PIN_SWCLK;
+    cfg.Mode  = GPIO_MODE_OUTPUT_PP;
+    cfg.Pull  = GPIO_NOPULL;
+    cfg.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(PORT_SWD, &cfg);
+
+    /* SWDIO default high (line idle) */
     SWD_Set_IO_Mode_Output();
+    HAL_GPIO_WritePin(PORT_SWD, PIN_SWDIO, GPIO_PIN_SET);
+
+#ifdef PIN_nRESET
+    /* Optional target nRESET line (active low) */
+    cfg.Pin = PIN_nRESET;
+    HAL_GPIO_Init(PORT_SWD, &cfg);
+    HAL_GPIO_WritePin(PORT_SWD, PIN_nRESET, GPIO_PIN_SET);
+#endif
+
+    enable_dwt_cycle_counter();
 }
 
-/*
- * SWCLK_Cycle
- * Performs one cycle of the SWCLK line (high → low).
- * Used to clock data in/out on SWD interface.
- */
-void SWCLK_Cycle(void) {
+/* -----------------------------------------------------------------------------
+ *  SWCLK pulse helper (high → low)
+ * --------------------------------------------------------------------------*/
+void SWCLK_Cycle(void)
+{
     HAL_GPIO_WritePin(PORT_SWD, PIN_SWCLK, GPIO_PIN_SET);
-    delay_short();
+    delay_us(1);                    /* ≈1 MHz clock */
     HAL_GPIO_WritePin(PORT_SWD, PIN_SWCLK, GPIO_PIN_RESET);
-    delay_short();
+    delay_us(1);
 }
 
-/*
- * SWD_LineReset
- * Clocks 60 SWCLK cycles with SWDIO held high.
- * Resets SWD line to a known state before sending any SWD transactions.
- */
-void SWD_LineReset(void) {
+/* -----------------------------------------------------------------------------
+ *  Line reset: 60 clock cycles, SWDIO kept high
+ * --------------------------------------------------------------------------*/
+void SWD_LineReset(void)
+{
     SWD_Set_IO_Mode_Output();
-    HAL_GPIO_WritePin(PORT_SWD, PIN_SWDIO, GPIO_PIN_SET); // Hold SWDIO high
-    for (int i = 0; i < 60; i++) {
+    HAL_GPIO_WritePin(PORT_SWD, PIN_SWDIO, GPIO_PIN_SET);
+
+    for (uint8_t i = 0; i < 60; ++i)
         SWCLK_Cycle();
-    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

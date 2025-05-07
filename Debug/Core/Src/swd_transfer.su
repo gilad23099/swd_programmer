@@ -1,2 +1,3 @@
-../Core/Src/swd_transfer.c:18:6:SWD_Send_Request_WithRetry	24	static
-../Core/Src/swd_transfer.c:37:9:SWD_Build_Header	24	static
+../Core/Src/swd_transfer.c:28:20:idle_cycles	16	static
+../Core/Src/swd_transfer.c:37:13:SWD_WriteReg	40	static
+../Core/Src/swd_transfer.c:84:13:SWD_ReadReg	48	static

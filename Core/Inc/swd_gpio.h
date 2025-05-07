@@ -10,40 +10,26 @@
 #ifndef SWD_GPIO_H
 #define SWD_GPIO_H
 
-#include "swd_defs.h"
 #include "stm32f4xx_hal.h"
+#include <stdint.h>
 
+/* -----------------------------------------------------------------------------
+ *  Pin assignment – adjust to your board wiring
+ * --------------------------------------------------------------------------*/
+#define PORT_SWD   GPIOB          /* GPIO port used for SWDIO + SWCLK       */
+#define PIN_SWDIO  GPIO_PIN_7     /* SWDIO pin number (e.g. PB7)            */
+#define PIN_SWCLK  GPIO_PIN_6     /* SWCLK pin number (e.g. PB6)            */
+/* #define PIN_nRESET GPIO_PIN_4 */  /* Optional target nRESET line           */
 
-/**
- * @brief  Generate a short delay (approx. one SWCLK half-period).
- */
-void delay_short(void);
-
-/**
- * @brief  Configure SWDIO pin as push-pull output.
- */
-void SWD_Set_IO_Mode_Output(void);
-
-/**
- * @brief  Configure SWDIO pin as input (high-impedance).
- */
-void SWD_Set_IO_Mode_Input(void);
-
-/**
- * @brief  Initialize SWCLK and SWDIO GPIOs for SWD operation.
- *         Enables clock and sets SWCLK to output, SWDIO to output initially.
- */
-void SWD_GPIO_Init(void);
-
-/**
- * @brief  Toggle SWCLK line once (high then low).
- */
-void SWCLK_Cycle(void);
-
-/**
- * @brief  Perform a line reset: 60 SWCLK cycles with SWDIO held high.
- */
-void SWD_LineReset(void);
+/* -----------------------------------------------------------------------------
+ *  Public API
+ * --------------------------------------------------------------------------*/
+void     SWD_GPIO_Init        (void);
+void     SWD_Set_IO_Mode_Output(void);
+void     SWD_Set_IO_Mode_Input (void);
+void     SWCLK_Cycle          (void);
+void     SWD_LineReset        (void);
+void     delay_us             (uint32_t us);
 
 #endif /* SWD_GPIO_H */
 

@@ -39,7 +39,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_hcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Core/Inc/swd_defs.h ../Core/Inc/swd_gpio.h ../Core/Inc/swd_bitbang.h \
- ../Core/Inc/swd_transfer.h ../Core/Inc/swd_dp_ap.h \
+ ../Core/Inc/swd_transfer.h ../Core/Inc/errors.h ../Core/Inc/swd_dp_ap.h \
  ../Core/Inc/swd_flash.h ../Core/Inc/swd_control.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -85,6 +85,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/swd_gpio.h:
 ../Core/Inc/swd_bitbang.h:
 ../Core/Inc/swd_transfer.h:
+../Core/Inc/errors.h:
 ../Core/Inc/swd_dp_ap.h:
 ../Core/Inc/swd_flash.h:
 ../Core/Inc/swd_control.h:

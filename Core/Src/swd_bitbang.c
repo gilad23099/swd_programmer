@@ -28,10 +28,10 @@ void SWD_Write_Bit(uint8_t bit) {
  */
 uint8_t SWD_Read_Bit(void) {
     HAL_GPIO_WritePin(PORT_SWD, PIN_SWCLK, GPIO_PIN_SET);
-    delay_short();
+    delay_us(1);
     uint8_t bit = HAL_GPIO_ReadPin(PORT_SWD, PIN_SWDIO);
     HAL_GPIO_WritePin(PORT_SWD, PIN_SWCLK, GPIO_PIN_RESET);
-    delay_short();
+    delay_us(1);
     return bit;
 }
 

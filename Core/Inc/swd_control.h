@@ -10,45 +10,23 @@
 #ifndef SWD_CONTROL_H
 #define SWD_CONTROL_H
 
+#include "errors.h"         /* swd_error_t */
+#include "stm32f4xx_hal.h"  /* HAL_Delay   */
 
-#include <stdint.h>          // uint32_t
-#include <stdbool.h>         // bool
-#include <stdio.h>           // printf (ל־SWD_Read_IDCODE debug)
-#include "swd_defs.h"        // PIN_SWDIO, FLASH_BASE, DP/AP macros
-#include "swd_gpio.h"        // SWD_GPIO_Init, SWD_LineReset, delay_short
-#include "swd_bitbang.h"     // SWD_Write_Bit, SWD_Read_Bit
-#include "swd_transfer.h"    // SWD_Send_Request_WithRetry, SWD_Build_Header
-#include "swd_dp_ap.h"       // SWD_Write_DP, SWD_Read_DP
+/* -----------------------------------------------------------------------------
+ *  Public API
+ * --------------------------------------------------------------------------*/
 
 /**
- * @brief Sends a 16-bit SWJ switch sequence (JTAG to SWD).
+ * Initialise SWD link: line‑reset, switch sequence, power‑up, AHB‑AP select.
+ * @return SWD_ERROR_OK on success, otherwise a specific swd_error_t code.
  */
-void SWD_Send_SwitchSequence(void);
+swd_error_t SWD_Init(void);
 
 /**
- * @brief Reads the 32-bit IDCODE from the DP register.
- * @return The IDCODE value, or 0xFFFFFFFF on failure.
+ * Halt the target CPU by writing to DHCSR (0xE000EDF0).
  */
-uint32_t SWD_Read_IDCODE(void);
+void  SWD_Halt_Target(void);
 
-/**
- * @brief Halts the target MCU by writing to the DHCSR register.
- */
-void SWD_Halt_Target(void);
+#endif /* SWD_CONTROL_H */
 
-/**
- * @brief Powers up the debug interface via CTRL/STAT register.
- */
-void SWD_PowerUpDebugInterface(void);
-
-/**
- * @brief Selects the AHB-AP as active AP.
- */
-void SWD_Select_AHB_AP(void);
-
-/**
- * @brief Initializes the full SWD interface and prepares target.
- */
-void SWD_Init(void);
-
-#endif // SWD_CONTROL_H
