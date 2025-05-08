@@ -34,6 +34,7 @@ swd_error_t SWD_Write_AP_Retry(uint8_t reg, uint32_t data, int tries)
     while (tries--) {
         swd_error_t e = SWD_Write_AP(reg, data);
         if (e == SWD_ERROR_OK)   return e;
+        if (e == SWD_ERROR_FAULT) SWD_ClearSticky();
         if (e != SWD_ERROR_WAIT) return e;
     }
     return SWD_ERROR_WAIT;
@@ -44,6 +45,7 @@ swd_error_t SWD_Read_AP_Retry(uint8_t reg, uint32_t *data, int tries)
     while (tries--) {
         swd_error_t e = SWD_Read_AP(reg, data);
         if (e == SWD_ERROR_OK)   return e;
+        if (e == SWD_ERROR_FAULT) SWD_ClearSticky();
         if (e != SWD_ERROR_WAIT) return e;
     }
     return SWD_ERROR_WAIT;

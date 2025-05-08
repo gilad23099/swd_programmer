@@ -5,9 +5,9 @@
 ../Core/Src/swd_dp_ap.c:12:13:SWD_Write_DP_Retry	32	static
 ../Core/Src/swd_dp_ap.c:22:13:SWD_Read_DP_Retry	32	static
 ../Core/Src/swd_dp_ap.c:32:13:SWD_Write_AP_Retry	32	static
-../Core/Src/swd_dp_ap.c:42:13:SWD_Read_AP_Retry	32	static
-../Core/Src/swd_dp_ap.c:57:6:SWD_PollPowerUp	24	static
-../Core/Src/swd_dp_ap.c:78:13:SWD_Write_TAR	16	static
-../Core/Src/swd_dp_ap.c:86:13:SWD_Write_DRW	16	static
-../Core/Src/swd_dp_ap.c:95:13:SWD_Read_DRW	24	static
-../Core/Src/swd_dp_ap.c:112:13:SWD_ClearSticky	16	static
+../Core/Src/swd_dp_ap.c:43:13:SWD_Read_AP_Retry	32	static
+../Core/Src/swd_dp_ap.c:59:6:SWD_PollPowerUp	24	static
+../Core/Src/swd_dp_ap.c:80:13:SWD_Write_TAR	16	static
+../Core/Src/swd_dp_ap.c:88:13:SWD_Write_DRW	16	static
+../Core/Src/swd_dp_ap.c:97:13:SWD_Read_DRW	24	static
+../Core/Src/swd_dp_ap.c:114:13:SWD_ClearSticky	16	static

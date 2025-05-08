@@ -142,8 +142,8 @@ int main(void)
 
   if (SWD_Verify_Firmware() == SWD_ERROR_OK) {
       SWD_Lock_Flash();
-      SWD_Target_HW_Reset();   /* פואלס ריסט פיזי (אם מוגדר) */
-      SWD_Run_Target();        /* וגם משחרר HALT דרך SWD    */
+      SWD_Target_HW_Reset();   /* Drive nRESET low → high to reset the target*/
+      SWD_Run_Target();        /* Release halt to let target CPU run normally  */
   } else {
       SWD_LOG("Firmware verification failed. Lock skipped.\n");
   }

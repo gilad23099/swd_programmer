@@ -3,5 +3,5 @@
 ../Core/Src/swd_gpio.c:35:6:SWD_Set_IO_Mode_Output	1
 ../Core/Src/swd_gpio.c:45:6:SWD_Set_IO_Mode_Input	1
 ../Core/Src/swd_gpio.c:54:6:SWD_GPIO_Init	1
-../Core/Src/swd_gpio.c:89:6:SWCLK_Cycle	1
-../Core/Src/swd_gpio.c:100:6:SWD_LineReset	2
+../Core/Src/swd_gpio.c:88:6:SWCLK_Cycle	1
+../Core/Src/swd_gpio.c:99:6:SWD_LineReset	2

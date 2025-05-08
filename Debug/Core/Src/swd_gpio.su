@@ -2,6 +2,6 @@
 ../Core/Src/swd_gpio.c:23:6:delay_us	32	static,ignoring_inline_asm
 ../Core/Src/swd_gpio.c:35:6:SWD_Set_IO_Mode_Output	32	static
 ../Core/Src/swd_gpio.c:45:6:SWD_Set_IO_Mode_Input	32	static
-../Core/Src/swd_gpio.c:54:6:SWD_GPIO_Init	56	static
-../Core/Src/swd_gpio.c:89:6:SWCLK_Cycle	8	static
-../Core/Src/swd_gpio.c:100:6:SWD_LineReset	16	static
+../Core/Src/swd_gpio.c:54:6:SWD_GPIO_Init	32	static
+../Core/Src/swd_gpio.c:88:6:SWCLK_Cycle	8	static
+../Core/Src/swd_gpio.c:99:6:SWD_LineReset	16	static
