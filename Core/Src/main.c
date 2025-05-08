@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "swd_flash.h"
 #include <stdio.h>
 
 
@@ -92,6 +93,7 @@ static void MX_USB_OTG_HS_HCD_Init(void);
 int main(void)
 {
 
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -126,16 +128,25 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //-----------------------------MY CODE ----------------------------------------
-  if (SWD_Init() != SWD_ERROR_OK) Error_Handler(); /* early exit on failure */
+  if (SWD_Init() != SWD_ERROR_OK)
+      Error_Handler(); /* failed at low-level init */
 
-  if (SWD_Halt_Target(), SWD_Unlock_Flash()!= SWD_ERROR_OK || SWD_Erase_Page(FLASH_BASE)!= SWD_ERROR_OK || SWD_Write_Firmware()!= SWD_ERROR_OK){
-	  Error_Handler();/* any step failed   */
-	}
 
-	if (SWD_Verify_Firmware() == SWD_ERROR_OK)
-	  SWD_Lock_Flash();
-	else
-	  SWD_LOG("Firmware verification failed. Lock skipped.\n");
+  /* Halt, unlock, erase-range, program, verify, lock */
+  SWD_Halt_Target();
+
+
+  if (SWD_Unlock_Flash() != SWD_ERROR_OK || SWD_Erase_Range(FLASH_BASE, firmware_size * 4) != SWD_ERROR_OK || SWD_Write_Firmware() != SWD_ERROR_OK ){
+      Error_Handler(); /* any step failed */
+  }
+
+  if (SWD_Verify_Firmware() == SWD_ERROR_OK) {
+      SWD_Lock_Flash();
+      SWD_Target_HW_Reset();   /* פואלס ריסט פיזי (אם מוגדר) */
+      SWD_Run_Target();        /* וגם משחרר HALT דרך SWD    */
+  } else {
+      SWD_LOG("Firmware verification failed. Lock skipped.\n");
+  }
 
   /* USER CODE END 2 */
 

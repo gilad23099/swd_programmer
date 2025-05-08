@@ -28,5 +28,20 @@ swd_error_t SWD_Init(void);
  */
 void  SWD_Halt_Target(void);
 
+/**
+ * Release the CPU from halt (write 0xA05F0001 to DHCSR).
+ */
+void SWD_Run_Target(void);
+
+/**
+ * Pulse nRESET low → high (requires PIN_nRESET).
+ */
+void SWD_Target_HW_Reset(void);
+
 #endif /* SWD_CONTROL_H */
+
+
+
+
+
 

@@ -32,9 +32,10 @@
 #define DP_ABORT_ORUNERRCLR  (1u << 3)   /* Over-run error    */
 
 
-/* -----------------------------------------------------------------------------
- * AP register indices used by retry helpers
- * --------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------
+ *  Helper macros – AP register indices (A[3:2])
+ *  0 = CSW / IDR , 1 = TAR , 2 = reserved , 3 = DRW
+ *---------------------------------------------------------------------------*/
 #define AP_TAR   1   /* A3:A2 = 01b */
 #define AP_DRW   3   /* A3:A2 = 11b */
 #define AP_IDR   0xFC  /* Full address (read-only), useful for chip-detect */

@@ -1,8 +1,10 @@
 ../Core/Inc/swd_transfer.h:26:27:SWD_Write_DP	1
 ../Core/Inc/swd_transfer.h:29:27:SWD_Read_DP	1
-../Core/Src/swd_control.c:21:13:SWD_Send_SwitchSequence	2
-../Core/Src/swd_control.c:31:20:SWD_Read_IDCODE	1
-../Core/Src/swd_control.c:39:6:SWD_Halt_Target	1
-../Core/Src/swd_control.c:48:20:SWD_PowerUpDebugInterface	1
-../Core/Src/swd_control.c:56:20:SWD_Select_AHB_AP	1
-../Core/Src/swd_control.c:64:13:SWD_Init	6
+../Core/Src/swd_control.c:20:13:SWD_Send_SwitchSequence	2
+../Core/Src/swd_control.c:30:20:SWD_Read_IDCODE	1
+../Core/Src/swd_control.c:38:6:SWD_Halt_Target	1
+../Core/Src/swd_control.c:46:6:SWD_Run_Target	1
+../Core/Src/swd_control.c:54:6:SWD_Target_HW_Reset	1
+../Core/Src/swd_control.c:67:20:SWD_PowerUpDebugInterface	1
+../Core/Src/swd_control.c:75:20:SWD_Select_AHB_AP	1
+../Core/Src/swd_control.c:83:13:SWD_Init	6

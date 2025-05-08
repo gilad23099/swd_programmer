@@ -12,6 +12,8 @@
  *  EFM32 MSC peripheral base and bit definitions
  * -------------------------------------------------------------------*/
 #define MSC_BASE        0x400E0000UL
+/* Flash page size (bytes) – EFM32 TG/GG = 2048. can change to 4096 if needed */
+#define MSC_PAGE_SIZE   2048UL
 
 #define MSC_WRITECTRL   (MSC_BASE + 0x000)
 #define MSC_ADDRB       (MSC_BASE + 0x004)

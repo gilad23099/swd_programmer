@@ -38,7 +38,7 @@ swd_error_t SWD_WriteReg(bool ap, uint8_t reg, uint32_t data, bool ignore_ack)
 {
     uint8_t A2 =  reg       & 1;
     uint8_t A3 = (reg >> 1) & 1;
-    uint8_t head_parity = (ap + /*RnW=*/0 + A2 + A3) & 1;
+    uint8_t head_parity = (ap + /*RnW=*/0 + A2 + A3) & 1; // if sum of bit 1-4 is even it will be 0 otherwise it will be 1
 
     /* Header (host ➜ target) */
     SWD_Set_IO_Mode_Output();
@@ -51,7 +51,7 @@ swd_error_t SWD_WriteReg(bool ap, uint8_t reg, uint32_t data, bool ignore_ack)
     SWD_WRITE_BIT(STOP_BIT);
     SWD_WRITE_BIT(PARK_BIT);
 
-    /* Turn‑around (host→target) */
+    /* Turn around (host→target) */
     SWD_Set_IO_Mode_Input();
     SWCLK_Cycle();
 
@@ -64,14 +64,17 @@ swd_error_t SWD_WriteReg(bool ap, uint8_t reg, uint32_t data, bool ignore_ack)
                (ack == ACK_FAULT) ? SWD_ERROR_FAULT  : SWD_ERROR_PROTOCOL;
     }
 
-    /* Turn‑around (target→host) */
+    /* Turn around (target→host) */
     SWCLK_Cycle();
     SWD_Set_IO_Mode_Output();
 
     /* Send data + parity */
     uint8_t parity = 0;
     for (int i = 0; i < 32; ++i) {
-        bit = (data >> i) & 1; SWD_WRITE_BIT(bit); parity ^= bit; }
+    	bit = (data >> i) & 1;
+        SWD_WRITE_BIT(bit);
+        parity ^= bit;
+    }
     SWD_WRITE_BIT(parity);
 
     idle_cycles(8);

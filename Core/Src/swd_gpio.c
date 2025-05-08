@@ -70,9 +70,13 @@ void SWD_GPIO_Init(void)
     HAL_GPIO_WritePin(PORT_SWD, PIN_SWDIO, GPIO_PIN_SET);
 
 #ifdef PIN_nRESET
-    /* Optional target nRESET line (active low) */
-    cfg.Pin = PIN_nRESET;
-    HAL_GPIO_Init(PORT_SWD, &cfg);
+    /* nRESET as open-drain output, start HIGH (released) */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin   = PIN_nRESET;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(PORT_SWD, &GPIO_InitStruct);
     HAL_GPIO_WritePin(PORT_SWD, PIN_nRESET, GPIO_PIN_SET);
 #endif
 
@@ -85,7 +89,7 @@ void SWD_GPIO_Init(void)
 void SWCLK_Cycle(void)
 {
     HAL_GPIO_WritePin(PORT_SWD, PIN_SWCLK, GPIO_PIN_SET);
-    delay_us(1);                    /* ≈1 MHz clock */
+    delay_us(1);                   /* ≈500 kHz clock (2 µs period) */
     HAL_GPIO_WritePin(PORT_SWD, PIN_SWCLK, GPIO_PIN_RESET);
     delay_us(1);
 }

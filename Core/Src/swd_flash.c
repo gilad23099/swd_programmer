@@ -15,10 +15,27 @@
 #include <stdio.h>
 
 /* Example firmware image -------------------------------------------------*/
-const uint32_t firmware_bin[] = {
-    0x20001000, 0x08000111, 0xF000F8EF, 0x00000000
-};
-const uint32_t firmware_size = sizeof(firmware_bin) / sizeof(firmware_bin[0]);
+//const uint32_t firmware_bin[] = {
+//    0x20001000, 0x08000111, 0xF000F8EF, 0x00000000
+//};
+//const uint32_t firmware_size = sizeof(firmware_bin) / sizeof(firmware_bin[0]);
+
+
+
+
+/* Erase_Range – wipes every page that overlaps the requested span -------------------------------------------------------------*/
+swd_error_t SWD_Erase_Range(uint32_t start_addr, uint32_t num_bytes)
+{
+    uint32_t first_page = start_addr & ~(MSC_PAGE_SIZE - 1UL);
+    uint32_t last_byte  = start_addr + num_bytes - 1UL;
+    uint32_t last_page  = last_byte & ~(MSC_PAGE_SIZE - 1UL);
+
+    for (uint32_t addr = first_page; addr <= last_page; addr += MSC_PAGE_SIZE) {
+        if (SWD_Erase_Page(addr) != SWD_ERROR_OK)
+            return SWD_ERROR_FAULT;
+    }
+    return SWD_ERROR_OK;
+}
 
 /* Unlock flash controller ------------------------------------------------*/
 swd_error_t SWD_Unlock_Flash(void)
@@ -34,16 +51,15 @@ swd_error_t SWD_Erase_Page(uint32_t page_address)
     uint32_t status;
 
     SWD_Write_TAR(MSC_ADDRB);
-    SWD_Write_DRW(page_address);
+    SWD_Write_DRW(page_address); // page i want to erase
 
     SWD_Write_TAR(MSC_WRITECMD);
     SWD_Write_DRW(MSC_WRITECMD_ERASEPAGE);
 
-    /* poll BUSY, retry on ACK‑WAIT */
+    /* poll BUSY, retry on ACK WAIT */
     do {
         SWD_Write_TAR(MSC_STATUS);
-        if (SWD_Read_AP_Retry(AP_DRW, &status,
-                              SWD_WAIT_RETRIES_DEFAULT) != SWD_ERROR_OK)
+        if (SWD_Read_AP_Retry(AP_DRW, &status, SWD_WAIT_RETRIES_DEFAULT) != SWD_ERROR_OK)
             return SWD_ERROR_FAULT;
     } while (status & MSC_STATUS_BUSY);
 
@@ -61,8 +77,7 @@ swd_error_t SWD_Write_Word(uint32_t addr, uint32_t data)
 
     do {
         SWD_Write_TAR(MSC_STATUS);
-        if (SWD_Read_AP_Retry(AP_DRW, &status,
-                              SWD_WAIT_RETRIES_DEFAULT) != SWD_ERROR_OK)
+        if (SWD_Read_AP_Retry(AP_DRW, &status, SWD_WAIT_RETRIES_DEFAULT) != SWD_ERROR_OK)
             return SWD_ERROR_FAULT;
     } while (status & MSC_STATUS_BUSY);
 
@@ -88,15 +103,13 @@ swd_error_t SWD_Verify_Firmware(void)
         uint32_t value = 0;
 
         SWD_Write_TAR(addr);
-        if (SWD_Read_AP_Retry(AP_DRW, &value,
-                              SWD_WAIT_RETRIES_DEFAULT) != SWD_ERROR_OK) {
+        if (SWD_Read_AP_Retry(AP_DRW, &value, SWD_WAIT_RETRIES_DEFAULT) != SWD_ERROR_OK) {
             printf("Read error @ 0x%08lX\n", addr);
             return SWD_ERROR_FAULT;
         }
 
         if (value != firmware_bin[i]) {
-            printf("Mismatch @ 0x%08lX: exp 0x%08lX, got 0x%08lX\n",
-                   addr, firmware_bin[i], value);
+            printf("Mismatch @ 0x%08lX: exp 0x%08lX, got 0x%08lX\n", addr, firmware_bin[i], value);
             return SWD_ERROR_PARITY;
         }
     }
@@ -111,6 +124,19 @@ swd_error_t SWD_Lock_Flash(void)
         return SWD_ERROR_FAULT;
     return SWD_Write_DRW(MSC_LOCK_LOCKKEY);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

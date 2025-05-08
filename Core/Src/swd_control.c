@@ -14,7 +14,6 @@
 #include "swd_transfer.h"
 #include "swd_bitbang.h"
 #include <stdio.h>
-
 /* -----------------------------------------------------------------------------
  *  Send 16 bit SWJ sequence 0xE79E  (switch JTAG ➜ SWD)
  * --------------------------------------------------------------------------*/
@@ -40,6 +39,26 @@ void SWD_Halt_Target(void)
 {
     SWD_Write_TAR(0xE000EDF0);           /* DHCSR address */
     SWD_Write_DRW(0xA05F0003);           /* HALT + DBGKEY */
+}
+
+
+/* --------------------------------------------------------------- */
+void SWD_Run_Target(void)
+{
+    /* DHCSR address = 0xE000EDF0 ; value = DBGKEY | C_DEBUGEN */
+    SWD_Write_TAR(0xE000EDF0);
+    SWD_Write_DRW(0xA05F0001);          /* clear C_HALT, keep DEBUGEN */
+}
+
+/* --------------------------------------------------------------- */
+void SWD_Target_HW_Reset(void)
+{
+#ifdef PIN_nRESET
+    HAL_GPIO_WritePin(PORT_SWD, PIN_nRESET, GPIO_PIN_RESET);
+    HAL_Delay(20);                      /* 20 ms low */
+    HAL_GPIO_WritePin(PORT_SWD, PIN_nRESET, GPIO_PIN_SET);
+    HAL_Delay(20);                      /* allow target boot */
+#endif
 }
 
 /* -----------------------------------------------------------------------------

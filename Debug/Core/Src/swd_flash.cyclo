@@ -1,6 +1,7 @@
-../Core/Src/swd_flash.c:24:13:SWD_Unlock_Flash	2
-../Core/Src/swd_flash.c:32:13:SWD_Erase_Page	3
-../Core/Src/swd_flash.c:54:13:SWD_Write_Word	3
-../Core/Src/swd_flash.c:73:13:SWD_Write_Firmware	3
-../Core/Src/swd_flash.c:84:13:SWD_Verify_Firmware	4
-../Core/Src/swd_flash.c:108:13:SWD_Lock_Flash	2
+../Core/Src/swd_flash.c:27:13:SWD_Erase_Range	3
+../Core/Src/swd_flash.c:41:13:SWD_Unlock_Flash	2
+../Core/Src/swd_flash.c:49:13:SWD_Erase_Page	3
+../Core/Src/swd_flash.c:70:13:SWD_Write_Word	3
+../Core/Src/swd_flash.c:88:13:SWD_Write_Firmware	3
+../Core/Src/swd_flash.c:99:13:SWD_Verify_Firmware	4
+../Core/Src/swd_flash.c:121:13:SWD_Lock_Flash	2

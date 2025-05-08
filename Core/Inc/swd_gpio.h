@@ -19,7 +19,7 @@
 #define PORT_SWD   GPIOB          /* GPIO port used for SWDIO + SWCLK       */
 #define PIN_SWDIO  GPIO_PIN_7     /* SWDIO pin number (e.g. PB7)            */
 #define PIN_SWCLK  GPIO_PIN_6     /* SWCLK pin number (e.g. PB6)            */
-/* #define PIN_nRESET GPIO_PIN_4 */  /* Optional target nRESET line           */
+#define PIN_nRESET GPIO_PIN_4   /* Optional target nRESET line           */
 
 /* -----------------------------------------------------------------------------
  *  Public API
